@@ -1,0 +1,71 @@
+<p-card>
+  <ng-template pTemplate="title">
+    <div class="flex flex-col items-center justify-between sm:flex-row">
+      <h5 class="m-0">{{'users.user_list' | translate}}</h5>
+      <div class="flex items-center">
+        @if (userAccess.canEditUsers) {
+          <p-button (onClick)="openNew()"
+                    [label]="'users.add_user' | translate"
+                    class="mr-2 responsive-button"
+                    icon="pi pi-plus"/>
+        }
+        <p-iconfield>
+          <p-inputicon styleClass="pi pi-search" />
+          <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" [placeholder]="('common.search' | translate)" />
+        </p-iconfield>
+      </div>
+    </div>
+  </ng-template>
+  <p-table #dt
+           [globalFilterFields]="['lastName', 'firstName', 'email']"
+           [paginator]="true"
+           [rowHover]="true"
+           [rows]="10"
+           [showCurrentPageReport]="true"
+           [value]="users"
+           [currentPageReportTemplate]="'common.current_page_report_template' | translate"
+           [rowsPerPageOptions]="[10, 25, 50]"
+           sortField="id"
+           dataKey="id"
+           responsiveLayout="stack"
+           stripedRows>
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="id"><p-sortIcon field="id" /> {{'common.identifier' | translate}}</th>
+        <th pSortableColumn="lastName"><p-sortIcon field="lastName" /> {{'common.last_name' | translate}}</th>
+        <th pSortableColumn="firstName"><p-sortIcon field="firstName" /> {{'common.first_name' | translate}}</th>
+        <th pSortableColumn="sex"><p-sortIcon field="sex" /> {{'common.gender' | translate}}</th>
+        <th pSortableColumn="email"><p-sortIcon field="email" /> {{'common.email' | translate}}</th>
+        <th pSortableColumn="role"><p-sortIcon field="role" /> {{'users.role' | translate}}</th>
+        <th pSortableColumn="isActive"><p-sortIcon field="isActive" /> {{'common.status' | translate}}</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-user>
+      <tr [attr.data-user-id]="user.id">
+        <td>{{ user.id }}</td>
+        <td>
+          @if (items.length > 0 && (user.id > 1 && currentUserId !== user.id)) {
+            <button (click)="selectedUser = user; menu.toggle($event)" class="text-blue-500 hover:text-blue-700 underline">
+              {{user.lastName | uppercase}}
+            </button>
+            <p-menu #menu
+                    [model]="items"
+                    [popup]="true"
+                    [appendTo]="'body'"/>
+          } @else {
+            {{ user.lastName | uppercase }}
+          }
+        </td>
+        <td>{{ user.firstName }}</td>
+        <td>{{ user.sex === 'M' ? ('common.man' | translate) : (user.sex === 'F' ? ('common.woman' | translate) : '')}}</td>
+        <td>{{ user.email }} <i class="text-blue-500 hover:text-blue-700 cursor-pointer p-2 pi pi-copy" (click)="copyToClipboard(user.email)"></i></td>
+        <td>{{ user.role }}</td>
+        <td>
+          <p-tag [value]="user.isActive ? ('users.activated' | translate) : ('users.not_activated' | translate)" [severity]="user.isActive ? 'success' : 'danger'" />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-confirmpopup></p-confirmpopup>

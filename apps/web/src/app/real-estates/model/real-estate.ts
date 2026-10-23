@@ -1,0 +1,45 @@
+import { RealEstateType } from './real-estate-type.enum';
+import { Address } from '../../core/models/address.model';
+import { LabelValue } from '../../core/models/label-value.model';
+import { Media } from '../../core/models/media.model';
+import { RealEstateStatus } from './real-estate-status.enum';
+import { RealEstateOrientation } from './real-estate-orientation.enum';
+import { RealEstateAssignment } from './real-estate-assignment.enum';
+
+export interface RealEstate {
+  id: number;
+  type: RealEstateType;
+  yearOfConstruction: number;
+  terraced: boolean;
+  surface: number;
+  totalSurface?: number;
+  roomCount: number;
+  showerCount?: number;
+  terraceCount?: number;
+  floorNumber?: number;
+  hasGarden?: boolean;
+  gardenSurface?: number;
+  isSecured?: boolean;
+  securityDetail?: string;
+  facadeCount?: number;
+  location?: string;
+  orientation: RealEstateOrientation;
+  assignment: RealEstateAssignment;
+  price: number;
+  priceCurrency: string;
+  remark?: string;
+  address: Address;
+  owners: number[];
+  ownersDetails?: LabelValue<number>[];
+  buyers?: number[];
+  buyersDetails?: LabelValue<string>[];
+  medias: Media[];
+  status: RealEstateStatus;
+  statusRemark: string;
+  saleDate?: string;
+  finalSellingPrice: number;
+  createdBy?: number;
+  createdAt: Date;
+  updatedBy?: number;
+  updatedAt?: Date;
+}

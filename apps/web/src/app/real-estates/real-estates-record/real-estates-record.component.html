@@ -1,0 +1,109 @@
+<p-card>
+  <ng-template pTemplate="content">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:w-[45rem]">
+      <div><strong>{{ 'real_estates.type' | translate }} :</strong> {{ realEstate.type | realEstatesType }}</div>
+      @if (realEstate.type === RealEstateType.LAND && realEstate.assignment) {
+        <div><strong>{{ 'real_estates.assignment' | translate }} :</strong> {{ realEstate.assignment | realEstatesAssignment }}</div>
+      }
+      <div><strong>{{ 'common.address' | translate }} :</strong> {{ realEstate.address | formatAddress }}</div>
+      <div><strong>{{ 'real_estates.price' | translate }} :</strong> {{ realEstate.price }} {{ realEstate.priceCurrency }}</div>
+      <div><strong>{{ 'real_estates.year_of_construction' | translate }} :</strong> {{ realEstate.yearOfConstruction }}</div>
+      <div><strong>{{ 'real_estates.surface' | translate }} :</strong> {{ realEstate.surface }} m²</div>
+      @if (realEstate.totalSurface && realEstate.totalSurface > 0) {
+        <div><strong>{{ 'real_estates.total_surface' | translate }} :</strong> {{ realEstate.totalSurface }} m²</div>
+      }
+      @if (realEstate.ownersDetails && realEstate.ownersDetails.length > 0) {
+        <div [class]="realEstate.location ? undefined : 'md:col-span-2'">
+          <strong>{{ 'real_estates.owner_or_owners' | translate }} :</strong>
+          @for (owner of realEstate.ownersDetails; track owner.value; let last = $last) {
+            {{owner.label}}@if (!last) {, }
+          }
+        </div>
+      }
+      <div><strong>{{ 'real_estates.room_count' | translate }} :</strong> {{ realEstate.roomCount }}</div>
+      @if (realEstate.showerCount) {
+        <div><strong>{{ 'real_estates.shower_count' | translate }} :</strong> {{ realEstate.showerCount }}</div>
+      }
+      @if (realEstate.facadeCount) {
+        <div><strong>{{ 'real_estates.facade_count' | translate }} :</strong> {{ realEstate.facadeCount }}</div>
+      }
+      @if (realEstate.terraceCount) {
+        <div><strong>{{ 'real_estates.terrace_count' | translate }} :</strong> {{ realEstate.terraceCount }}</div>
+      }
+      @if (realEstate.floorNumber) {
+        <div><strong>{{ 'real_estates.floor_number' | translate }} :</strong> {{ realEstate.floorNumber }}</div>
+      }
+      <div>
+        <strong>{{ 'real_estates.terraced' | translate }} :</strong> {{ realEstate.terraced ? ('common.yes' | translate) : ('common.no' | translate) }}
+      </div>
+      <div>
+        <strong>{{ 'real_estates.has_garden' | translate }} :</strong> {{ realEstate.hasGarden ? ('common.yes' | translate) : ('common.no' | translate) }} @if (realEstate.gardenSurface) {({{ realEstate.gardenSurface }} m²)}
+      </div>
+      @if (realEstate.location) {
+        <div><strong>{{ 'real_estates.location' | translate }} :</strong> {{ realEstate.location }}</div>
+      }
+      @if (realEstate.orientation) {
+        <div><strong>{{ 'real_estates.orientation' | translate }} :</strong> {{ realEstate.orientation  | realEstatesOrientation }}</div>
+      }
+      @if (realEstate.isSecured) {
+        <div><strong>{{ 'real_estates.is_secured' | translate }} :</strong> {{ realEstate.isSecured ? ('common.yes' | translate) : ('common.no' | translate) }} @if (realEstate.isSecured && realEstate.securityDetail) {({{ realEstate.securityDetail }})}</div>
+      }
+
+      @if (realEstate.remark) {
+        <div><strong>{{ 'common.remarks' | translate }} :</strong> {{ realEstate.remark }}</div>
+      }
+      @if (pictures.length > 0) {
+        <div class="md:col-span-2">
+          <h4 class="text-lg font-semibold pb-2">{{ 'common.pictures' | translate }}</h4>
+          <div class="flex gap-4 flex-wrap">
+            @for (media of pictures; track media.uuid) {
+              <div class="p-4 flex flex-col border justify-center">
+                <ks-real-estates-media-card [showFileSize]="false"
+                                            attachmentType="pictures"
+                                            [media]="media"/>
+              </div>
+            }
+          </div>
+        </div>
+      }
+      @if (videos.length > 0) {
+        <div class="md:col-span-2">
+          <h4 class="text-lg font-semibold pb-2">{{ 'common.videos' | translate }}</h4>
+          <div class="flex gap-4 flex-wrap">
+            @for (media of videos; track media.uuid) {
+              <div class="p-4 flex flex-col border justify-center">
+                <ks-real-estates-media-card [showFileSize]="false"
+                                            attachmentType="videos"
+                                            [media]="media"/>
+              </div>
+            }
+          </div>
+        </div>
+      }
+      @if (documents.length > 0) {
+        <div class="md:col-span-2">
+          <h4 class="text-lg font-semibold pb-2">{{ 'common.documents' | translate }}</h4>
+          <div class="flex gap-4 flex-wrap">
+            @for (media of documents; track media.uuid) {
+              <div class="p-4 flex flex-col border justify-center">
+                <ks-real-estates-media-card [showFileSize]="false"
+                                            attachmentType="documents"
+                                            [media]="media"/>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </ng-template>
+  <ng-template pTemplate="footer">
+    <div class="text-right italic text-gray-500 text-sm">
+      @if (realEstate.updatedAt) {
+        <div>{{ 'common.updated_on' | translate }} : {{ realEstate.updatedAt | date:'dd.MM.yyyy HH:mm' }}</div>
+      }
+      @else {
+        <div>{{ 'common.created_on' | translate }} : {{ realEstate.createdAt | date:'dd.MM.yyyy HH:mm' }}</div>
+      }
+    </div>
+  </ng-template>
+</p-card>

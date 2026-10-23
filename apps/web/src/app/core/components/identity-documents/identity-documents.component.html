@@ -1,0 +1,85 @@
+<p-fileupload #fileUpload
+              (onUpload)="onFileUploaded($event)"
+              (onSelect)="onSelectFiles($event)"
+              [accept]="uploadAcceptFileType"
+              [fileLimit]="fileLimit"
+              [maxFileSize]="maxFileSize"
+              [multiple]="true"
+              method="post">
+  <ng-template #header
+               let-chooseCallback="chooseCallback"
+               let-files
+               let-clearCallback="clearCallback">
+    <div class="flex gap-2 items-center">
+      <p-button (onClick)="chooseCallback()"
+                [disabled]="totalFileSize > maxFileSize || (pendingFiles.length + uploadedFiles.length) >= fileLimit"
+                [outlined]="true"
+                [label]="'common.select_files' | translate"
+                icon="pi pi-images"
+                size="small"/>
+      <p-button (onClick)="clearCallback(); onClear();"
+                [disabled]="!files || files.length === 0"
+                [outlined]="true"
+                [label]="'common.delete_files' | translate"
+                icon="pi pi-times"
+                severity="danger"
+                size="small"/>
+    </div>
+    @if ((pendingFiles.length + uploadedFiles.length) > fileLimit) {
+      <p-message size="small" severity="error" icon="pi pi-exclamation-triangle">{{'real_estates.max_file_number_exceeded' | translate}}</p-message>
+    }
+    @else if (totalFileSize > maxFileSize) {
+      <p-message size="small" severity="error" icon="pi pi-exclamation-triangle">{{'real_estates.max_file_size_exceeded' | translate}}</p-message>
+    }
+  </ng-template>
+  <ng-template #content
+               let-files
+               let-removeFileCallback="removeFileCallback"
+               let-clearCallback="clearCallback"
+               let-removeUploadedFileCallback="removeUploadedFileCallback"
+               let-uploadedFiles="uploadedFiles">
+    <div class="flex flex-wrap gap-4">
+      @if (uploadedFiles?.length > 0) {
+        @for (file of uploadedFiles; track file.name; let index = $index) {
+          <div class="p-4 flex flex-col border items-center justify-between gap-4 w-[47%]">
+            <ks-real-estates-media-card [attachmentType]="file.name | attachmentType"
+                                        [file]="file"/>
+            <div class="flex flex-col gap-4 items-center">
+              <p-badge [value]="'common.file_saved' | translate" severity="success" />
+              <p-button icon="pi pi-times"
+                        (onClick)="onRemoveUploadedFile(file, removeUploadedFileCallback, index, clearCallback, $event)"
+                        [outlined]="true"
+                        [rounded]="true"
+                        severity="danger"/>
+            </div>
+          </div>
+        }
+      }
+      @if (files?.length > 0) {
+        @for (file of files; track file.name; let index = $index) {
+          <div class="p-4 flex flex-col border items-center justify-between gap-4  w-[47%]">
+            <ks-real-estates-media-card [attachmentType]="file.name | attachmentType"
+                                        [file]="file"/>
+            <div class="flex flex-col gap-4 items-center">
+              <p-badge [value]="'common.file_not_saved' | translate" severity="warn" />
+              <p-button icon="pi pi-times"
+                        (click)="onRemovePendingFile(file, $event, removeFileCallback, index)"
+                        [outlined]="true"
+                        [rounded]="true"
+                        severity="danger"/>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </ng-template>
+  <ng-template #file></ng-template>
+  <ng-template #empty>
+    <div class="flex items-center justify-center flex-col">
+      <i class="pi pi-cloud-upload !border-2 !rounded-full !p-8 !text-4xl !text-muted-color"></i>
+      <p class="mt-6 mb-0">{{'real_estates.drag_and_drop_files' | translate}}</p>
+    </div>
+  </ng-template>
+</p-fileupload>
+
+<p-confirmpopup></p-confirmpopup>

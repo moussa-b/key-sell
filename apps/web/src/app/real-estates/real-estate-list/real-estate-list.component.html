@@ -1,0 +1,182 @@
+<p-card>
+  <ng-template pTemplate="title">
+    <div class="flex flex-col items-center justify-between sm:flex-row">
+      <h5 class="m-0">{{'real_estates.real_estate_list' | translate}}</h5>
+      <div class="flex items-center">
+        @if (userAccess.canEditRealEstates) {
+          <p-button (onClick)="openNew()"
+                    [label]="'real_estates.add_real_estate' | translate"
+                    class="mr-2 responsive-button"
+                    icon="pi pi-plus"/>
+        }
+        <p-iconfield>
+          <p-inputicon styleClass="pi pi-search" />
+          <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" [placeholder]="('common.search' | translate)" />
+        </p-iconfield>
+      </div>
+    </div>
+  </ng-template>
+  <p-table #dt
+           [globalFilterFields]="['concatenedAddress', 'concatenedOwners', 'formattedType', 'formattedStatus']"
+           [paginator]="true"
+           [rowHover]="true"
+           [rows]="10"
+           [showCurrentPageReport]="true"
+           [value]="realEstates"
+           [currentPageReportTemplate]="'common.current_page_report_template' | translate"
+           [rowsPerPageOptions]="[10, 25, 50]"
+           sortField="id"
+           dataKey="id"
+           responsiveLayout="stack"
+           stripedRows>
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="id" class="whitespace-nowrap">
+          <p-sortIcon field="id"/>
+          {{ 'common.identifier' | translate }}
+        </th>
+        <th class="whitespace-nowrap">{{ 'common.address' | translate }}
+          <p-columnFilter [matchMode]="FilterMatchMode.CONTAINS"
+                          [operator]="FilterOperator.OR"
+                          [showOperator]="false"
+                          display="menu"
+                          field="concatenedAddress"
+                          type="text"/>
+        </th>
+        <th class="whitespace-nowrap" pSortableColumn="formattedType">
+          <p-sortIcon field="formattedType" /> {{'real_estates.type' | translate}}
+          <p-columnFilter [showAddButton]="false"
+                          [showMatchModes]="false"
+                          [showOperator]="false"
+                          field="type"
+                          matchMode="multiSelectMatchMode"
+                          display="menu">
+            <ng-template #filter
+                         let-value
+                         let-filter="filterCallback">
+              <p-multiSelect (onChange)="filter($event.value)"
+                             [ngModel]="value"
+                             [options]="realEstateTypes"
+                             [placeholder]="'common.select' | translate">
+              </p-multiSelect>
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        <th class="whitespace-nowrap" pSortableColumn="surface">
+          <p-sortIcon field="surface"/>
+          {{ 'real_estates.surface' | translate }}
+          <p-columnFilter
+            [operator]="FilterOperator.AND"
+            [showOperator]="false"
+            display="menu"
+            field="surface"
+            type="numeric"/>
+        </th>
+        <th class="whitespace-nowrap" pSortableColumn="roomCount">
+          <p-sortIcon field="roomCount"/>
+          {{ 'real_estates.room_count' | translate }}
+          <p-columnFilter [operator]="FilterOperator.AND"
+                          [showOperator]="false"
+                          type="numeric"
+                          field="roomCount"
+                          display="menu"/>
+        </th>
+        <th class="whitespace-nowrap" pSortableColumn="price">
+          <p-sortIcon field="price"/>
+          {{ 'real_estates.price' | translate }}
+          <p-columnFilter [operator]="FilterOperator.AND"
+                          [showOperator]="false"
+                          [useGrouping]="false"
+                          display="menu"
+                          field="price"
+                          type="numeric"/>
+        </th>
+        <th class="whitespace-nowrap">{{'common.status' | translate}}
+          <p-columnFilter [showAddButton]="false"
+                          [showMatchModes]="false"
+                          [showOperator]="false"
+                          display="menu"
+                          field="status"
+                          matchMode="multiSelectMatchMode">
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-multiSelect (onChange)="filter($event.value)"
+                             [ngModel]="value"
+                             [options]="realEstateStatusOptions"
+                             [placeholder]="'common.select' | translate">
+              </p-multiSelect>
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        <th class="whitespace-nowrap">{{'real_estates.owner_or_owners' | translate}}
+          <p-columnFilter [showAddButton]="false"
+                          [showMatchModes]="false"
+                          [showOperator]="false"
+                          display="menu"
+                          field="ownersDetails"
+                          matchMode="multiSelectLabelValueMatchMode">
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-multiSelect (onChange)="filter($event.value)"
+                             [ngModel]="value"
+                             [options]="owners"
+                             [placeholder]="'common.select' | translate">
+              </p-multiSelect>
+            </ng-template>
+          </p-columnFilter>
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-realEstate>
+      <tr [attr.data-real-estate-id]="realEstate.id">
+        <td>{{ realEstate.id }}</td>
+        <td>
+          @if (items.length) {
+            <button (click)="selectedRealEstate = realEstate; items.length === 1 ? openRealEstateRecord() : menu.toggle($event)"
+                    class="text-blue-500 hover:text-blue-700 underline text-left">
+              {{ realEstate.address | formatAddress:('common.not_specified_female' | translate) }}
+            </button>
+            <p-menu #menu
+                    [model]="items"
+                    [popup]="true"
+                    [appendTo]="'body'"/>
+          } @else {
+            {{ realEstate.address | formatAddress:('common.not_specified_female' | translate) }}
+          }
+        </td>
+        <td>{{ realEstate.formattedType }}</td>
+        <td>{{ realEstate.surface }}@if(realEstate.surface > 0) { m²}</td>
+        <td>{{ realEstate.roomCount }}</td>
+        <td>{{ realEstate.price }} {{ realEstate.priceCurrency }}</td>
+        <td><ks-real-estate-status-tag [realEstate]="realEstate"/></td>
+        <td>
+          @if (realEstate.ownersDetails?.length > 0) {
+            @for (owner of realEstate.ownersDetails; track owner.value; let last = $last) {
+              {{owner.label}}@if (!last) {, }
+            }
+          } @else {
+            {{'common.not_specified' | translate}}
+          }
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-confirmpopup></p-confirmpopup>
+
+<p-dialog [(visible)]="showDialog"
+          [modal]="true"
+          (onHide)="selectedRealEstate = undefined">
+  <ng-template pTemplate="header">
+    <div class="flex items-center justify-between w-full">
+      <span class="p-dialog-title">{{'real_estates.real_estate_detail' |translate}}</span>
+      <p-button (onClick)="downloadRealEstateDetail(selectedRealEstate!.id)"
+                [label]="'common.download' | translate"
+                variant="outlined"
+                class="mr-2 responsive-button"
+                [icon]="PrimeIcons.DOWNLOAD"/>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="content">
+    <ks-real-estates-record [realEstate]="selectedRealEstate!"/>
+  </ng-template>
+</p-dialog>
