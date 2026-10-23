@@ -1,5 +1,5 @@
 {
-  "name": "key-sell-ui",
+  "name": "@key-sell/web",
   "version": "2025.11.29.01",
   "scripts": {
     "ng": "ng",

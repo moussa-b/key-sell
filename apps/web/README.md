@@ -4,7 +4,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4300/`. The application will automatically reload if you change any of the source files.
+This app is part of the `key-sell` monorepo: run `npm install` from the repository root, then `npm run dev:web` (or `npm start` from `apps/web`) for a dev server. Navigate to `http://localhost:4300/`. The application will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 

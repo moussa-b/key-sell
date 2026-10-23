@@ -1,7 +1,13 @@
 # compiled output
-/dist
-/node_modules
-/build
+dist/
+node_modules/
+build/
+/apps/web/tmp
+/apps/web/out-tsc
+
+# Angular
+.angular/
+.sass-cache/
 
 # Logs
 logs
@@ -14,13 +20,14 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+Thumbs.db
 
 # Tests
-/coverage
+coverage/
 /.nyc_output
 
 # IDEs and editors
-/.idea
+.idea/
 .project
 .classpath
 .c9/
@@ -34,6 +41,7 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.history/*
 
 # dotenv environment variable files
 .env
@@ -52,7 +60,7 @@ pids
 *.pid
 *.seed
 *.pid.lock
-/uploads
+uploads/
 /vps
 
 # Diagnostic reports (https://nodejs.org/api/report.html)

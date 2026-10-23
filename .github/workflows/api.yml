@@ -1,10 +1,27 @@
-name: Docker Image CI
+name: API - Docker Image CI
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/api/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.dockerignore'
+      - '.github/workflows/api.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/api/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.dockerignore'
+      - '.github/workflows/api.yml'
+
+# The API and web workflows both push version bumps to main
+concurrency:
+  group: version-bump-main
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -17,11 +34,11 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Get and update version from package.json
+      - name: Get and update version from apps/api/package.json
         id: version
         run: |
           # Extract version from package.json
-          VERSION=$(jq -r '.version' package.json)
+          VERSION=$(jq -r '.version' apps/api/package.json)
           DATE_PART=$(echo $VERSION | cut -d'.' -f1-3)  # Extract yyyy.mm.dd
           LAST_PUSH=$(echo $VERSION | cut -d'.' -f4)    # Extract last 2 digits
           
@@ -36,23 +53,26 @@ jobs:
             NEW_VERSION="$DATE_PART.$NEW_PUSH_NUMBER"
           fi
           
-          # Update package.json with new version
-          jq --arg new_version "$NEW_VERSION" '.version = $new_version' package.json > temp.json && mv temp.json package.json
+          # Update apps/api/package.json with new version
+          jq --arg new_version "$NEW_VERSION" '.version = $new_version' apps/api/package.json > temp.json && mv temp.json apps/api/package.json
+          # The monorepo lockfile also records the workspace version
+          jq --arg new_version "$NEW_VERSION" '.packages["apps/api"].version = $new_version' package-lock.json > temp.json && mv temp.json package-lock.json
           
           # Output new version for later steps
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           echo "New version: $NEW_VERSION"
 
-      - name: Commit updated package.json
+      - name: Commit updated apps/api/package.json
         env:
           GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
         run: |
           git config --global user.email "$GIT_USER_EMAIL"
           git config --global user.name "$GIT_USER_NAME"
-          git add package.json
-          git commit -m "Bump version to ${{ env.NEW_VERSION }}"
-          git push origin main
+          git add apps/api/package.json package-lock.json
+          git commit -m "Bump API version to ${{ env.NEW_VERSION }}"
+          git pull --rebase origin main
+          git push origin HEAD:main
 
       - name: Create and push git tag
         run: |
@@ -70,6 +90,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: apps/api/Dockerfile
           push: true
           tags: |
             bdzapps/key-sell-services:latest

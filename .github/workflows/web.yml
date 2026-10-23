@@ -1,10 +1,21 @@
-name: Docker Image CI
+name: Web - Version bump
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/web.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/web.yml'
+
+# The API and web workflows both push version bumps to main
+concurrency:
+  group: version-bump-main
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -23,7 +34,7 @@ jobs:
         id: version
         run: |
           # Extract version from environment.ts
-          VERSION=$(grep "version:" src/environments/environment.ts | awk -F"'" '{print $2}')
+          VERSION=$(grep "version:" apps/web/src/environments/environment.ts | awk -F"'" '{print $2}')
           DATE_PART=$(echo $VERSION | cut -d'.' -f1-3)  # Extract yyyy.mm.dd
           LAST_PUSH=$(echo $VERSION | cut -d'.' -f4)    # Extract last 2 digits
 
@@ -39,10 +50,12 @@ jobs:
           fi
 
           # Update environment.ts with new version
-          sed -i "s/version: '.*'/version: '$NEW_VERSION'/" src/environments/environment.ts
+          sed -i "s/version: '.*'/version: '$NEW_VERSION'/" apps/web/src/environments/environment.ts
 
-          # Update package.json
-          jq ".version = \"$NEW_VERSION\"" package.json > tmp.$$.json && mv tmp.$$.json package.json
+          # Update apps/web/package.json
+          jq ".version = \"$NEW_VERSION\"" apps/web/package.json > tmp.$$.json && mv tmp.$$.json apps/web/package.json
+          # The monorepo lockfile also records the workspace version
+          jq ".packages[\"apps/web\"].version = \"$NEW_VERSION\"" package-lock.json > tmp.$$.json && mv tmp.$$.json package-lock.json
 
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           echo "Updated version: $NEW_VERSION"
@@ -54,11 +67,13 @@ jobs:
         run: |
           git config --global user.email "$GIT_USER_EMAIL"
           git config --global user.name "$GIT_USER_NAME"
-          git add src/environments/environment.ts package.json
-          git commit -m "Bump version to ${{ env.NEW_VERSION }}"
-          git push origin main
+          git add apps/web/src/environments/environment.ts apps/web/package.json package-lock.json
+          git commit -m "Bump web version to ${{ env.NEW_VERSION }}"
+          git pull --rebase origin main
+          git push origin HEAD:main
 
       - name: Create and push git tag
         run: |
-          git tag v${{ env.NEW_VERSION }}
-          git push origin v${{ env.NEW_VERSION }}
+          # web- prefix: API tags already use v<version>
+          git tag web-v${{ env.NEW_VERSION }}
+          git push origin web-v${{ env.NEW_VERSION }}
